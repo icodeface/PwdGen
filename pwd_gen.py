@@ -19,44 +19,54 @@ class PwdGen(object):
         :type numbers: list
         :type words: list
         """
-        self.name = name
+        self.name = name.lower()
         self.phone = phone
         self.birthday = birthday
         self.words = words
         self.numbers = numbers
 
     def handle_name(self):
-        result = []
+        result = set()
         if not self.name:
             return result
         name_chars = self.name.split('-')
+
         # 全拼
-        result.append(''.join(name_chars))
+        result.add(''.join(name_chars))
+
         # 首字母缩写
         abbr = "".join([x[0] for x in name_chars])
-        result.append(abbr)
-        # []会被替换成其他的数字或字词
-        result.append(abbr[0]+"[]"+abbr[1:])
-        result.append(abbr[1:]+"[]"+abbr[0])
+        result.add(abbr)
+        result.add(abbr + abbr.upper())
+        result.add(abbr.upper() + abbr)
+        result.add(abbr + "[]" + abbr.upper())
+        result.add(abbr.upper() + "[]" + abbr)
+        result.add(abbr[0]+"[]"+abbr[1:])
+        result.add(abbr[1:]+"[]"+abbr[0])
+
         # 姓氏
         first_name = name_chars[0]
-        result.append(first_name)
+        result.add(first_name)
+        result.add(first_name[0])
+        result.add(first_name[0].upper())
+
         # 名
         last_name = "".join(name_chars[1:])
-        result.append(last_name)
+        result.add(last_name)
+
         # 姓 [] 名
-        result.append(first_name+"[]"+last_name)
-        result.append(last_name+"[]"+first_name)
-        result.append(abbr[0]+"[]"+last_name)
-        # 全小写\全大写\首字母大写
-        result += [x.upper() for x in result]
-        result += [x.capitalize() for x in result]
-        result.append(first_name[0])
-        result.append(first_name[0].upper())
+        result.add(first_name+"[]"+last_name)
+        result.add(last_name+"[]"+first_name)
+        result.add(abbr[0]+"[]"+last_name)
+
+        # 全大写\首字母大写
+        result |= set([x.upper() for x in result])
+        result |= set([x.capitalize() for x in result])
+
         return result
 
     def handle_birthday(self):
-        result = []
+        result = set()
         if not self.birthday or len(self.birthday) < 1:
             return result
 
@@ -64,23 +74,23 @@ class PwdGen(object):
         month = self.birthday[4:6]
         day = self.birthday[6:]
 
-        result.append(self.birthday)
-        result.append(self.birthday[2:])
-        result.append(year)
-        result.append(month+day)
+        result.add(self.birthday)
+        result.add(self.birthday[2:])
+        result.add(year)
+        result.add(month+day)
 
         if month[0] == '0':
-            result.append(month[1]+day)
-            result.append(month[1]+day+year)
-            result.append(year+month[1]+day)
+            result.add(month[1]+day)
+            result.add(month[1]+day+year)
+            result.add(year+month[1]+day)
 
         if day[0] == '0':
-            result.append(month+day[1])
-            result.append(month+day[1]+year)
-            result.append(year+month+day[1])
-            result.append(month[1]+day[1])
-            result.append(month[1]+day[1]+year)
-            result.append(year+month[1]+day[1])
+            result.add(month+day[1])
+            result.add(month+day[1]+year)
+            result.add(year+month+day[1])
+            result.add(month[1]+day[1])
+            result.add(month[1]+day[1]+year)
+            result.add(year+month[1]+day[1])
 
         return result
 
@@ -88,11 +98,11 @@ class PwdGen(object):
         passwords = set()
 
         alphas = self.handle_name()
-        alphas += self.words
+        alphas |= set(self.words)
 
-        numbers = [self.phone, ]
-        numbers += self.handle_birthday()
-        numbers += self.numbers
+        numbers = set(self.numbers)
+        numbers |= self.handle_birthday()
+        numbers.add(self.phone)
 
         additions = []
         with open('addition.lst') as af:
@@ -117,9 +127,9 @@ if __name__ == '__main__':
     numbers_ = ['1998', '2016']
     words_ = ['taobao', 'tamll', 'ali', 'alibaba']
     p = PwdGen(name=name_, phone=phone_, birthday=birthday_, numbers=numbers_, words=words_)
-    with open('password.txt', 'a+') as f:
-        f.truncate(0)
-        for password in list(p.generate()):
-            if len(password) > 5:
-                f.write(password+'\n')
+    # with open('password.txt', 'a+') as f:
+    #     f.truncate(0)
+    #     for password in list(p.generate()):
+    #         if len(password) > 5:
+    #             f.write(password+'\n')
 
