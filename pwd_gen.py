@@ -110,12 +110,14 @@ class PwdGen(object):
 
         # alpha + number / number + alpha
         for alpha in alphas:
-            passwords.update([alpha.replace("[]", add) if "[]" in alpha else add+alpha for add in additions])
-            passwords.update([alpha.replace("[]", num) if "[]" in alpha else ''+num+alpha for num in numbers])
+            passwords.update([alpha.replace("[]", add) if "[]" in alpha
+                              else add+alpha for add in additions])
+            passwords.update([alpha.replace("[]", num) if "[]" in alpha
+                              else str(num)+alpha for num in numbers])
             passwords.update([alpha+num for num in numbers if "[]" not in alpha])
 
         for pwd in passwords.copy():
-            passwords.update([pwd+addition for addition in filter(lambda x: len(x) < 5, additions)])
+            passwords.update([pwd+addition for addition in additions])
 
         return passwords
 
